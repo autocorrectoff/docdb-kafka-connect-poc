@@ -1,0 +1,18 @@
+{
+  "name": "docdb-kafka-connect-poc",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Checking if possible to feed docdb without subscriber",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@faker-js/faker": "^9.8.0",
+    "kafkajs": "^2.2.4"
+  }
+}

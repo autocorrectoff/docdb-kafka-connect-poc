@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+
+  # Kafka
+  zookeeper-ingestion-poc:
+    image: confluentinc/cp-zookeeper:6.2.10
+    hostname: zookeeper-ingestion-poc
+    container_name: zookeeper-ingestion-poc
+    ports:
+      - '32181:32181'
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: localhost:22888:23888
+
+  kafka-1-ingestion-poc:
+    image: confluentinc/cp-kafka:6.2.10
+    container_name: kafka-1-ingestion-poc
+    ports:
+      - '9092:9092'
+    depends_on:
+      - zookeeper-ingestion-poc
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-ingestion-poc:32181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-1-ingestion-poc:29092,EXTERNAL://localhost:9092
+      KAFKA_MESSAGE_MAX_BYTES: 10485880
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 10485880
+
+  kafka-2-ingestion-poc:
+    image: confluentinc/cp-kafka:6.2.10
+    container_name: kafka-2-ingestion-poc
+    ports:
+      - '9093:9093'
+    depends_on:
+      - zookeeper-ingestion-poc
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-ingestion-poc:32181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-2-ingestion-poc:29093,EXTERNAL://localhost:9093
+      KAFKA_MESSAGE_MAX_BYTES: 10485880
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 10485880
+
+  kafka-3-ingestion-poc:
+    image: confluentinc/cp-kafka:6.2.10
+    container_name: kafka-3-ingestion-poc 
+    ports:
+      - '9094:9094'
+    depends_on:
+      - zookeeper-ingestion-poc
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-ingestion-poc:32181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-3-ingestion-poc:29094,EXTERNAL://localhost:9094
+      KAFKA_MESSAGE_MAX_BYTES: 10485880
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 10485880
+
+  kafka-ui-ingestion-poc:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui-ingestion-poc
+    depends_on:
+      - kafka-1-ingestion-poc
+      - kafka-2-ingestion-poc
+      - kafka-3-ingestion-poc
+    ports:
+      - 8090:8080
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-1
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1-ingestion-poc:29092,kafka-2-ingestion-poc:29093,kafka-3-ingestion-poc:29094
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper-ingestion-poc:32181
+
+  # Mongo
+  mongodb-ingestion-poc:
+    image: mongo:6
+    container_name: mongodb-ingestion-poc
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  # Kafka Connect
+  k-connect-ingestion-poc:
+    image: confluentinc/cp-kafka-connect:7.6.1
+    container_name: k-connect-ingestion-poc
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka-1-ingestion-poc
+      - kafka-2-ingestion-poc
+      - kafka-3-ingestion-poc
+      - mongodb-ingestion-poc
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka-1-ingestion-poc:29092,kafka-2-ingestion-poc:29093,kafka-3-ingestion-poc:29094
+      CONNECT_REST_PORT: 8083
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_GROUP_ID: mongo-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/jars"
+      CONNECT_MONGO_URI: mongodb://root:example@mongodb-ingestion-poc:27017/?authSource=admin
+    volumes:
+      - ./connect-plugins:/etc/kafka-connect/jars

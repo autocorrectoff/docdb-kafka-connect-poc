@@ -1,0 +1,19 @@
+{
+  "name": "mongo-sink",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "tasks.max": "1",
+    "topics": "faker-data",
+    "connection.uri": "mongodb://root:example@mongodb-ingestion-poc:27017/?authSource=admin",
+    "database": "testdb",
+    "collection": "testcoll",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter.schemas.enable": "false",
+    "writemodel.strategy": "com.mongodb.kafka.connect.sink.writemodel.strategy.ReplaceOneBusinessKeyStrategy",
+    "document.id.strategy": "com.mongodb.kafka.connect.sink.processor.id.strategy.PartialKeyStrategy",
+    "key.projection.type": "AllowList",
+    "key.projection.list": "message_id"
+  }
+}
