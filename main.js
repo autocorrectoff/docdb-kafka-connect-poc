@@ -77,6 +77,14 @@ const generateRandomContent = () => {
     };
 };
 
+function getRandomItem(arr) {
+    if (!Array.isArray(arr) || arr.length === 0) {
+        throw new Error("Input must be a non-empty array");
+    }
+    const randomIndex = Math.floor(Math.random() * arr.length);
+    return arr[randomIndex];
+}
+
 const main = async () => {
     const kafka = new Kafka({
         clientId: 'nodejs-producer',
@@ -88,18 +96,22 @@ const main = async () => {
         await producer.connect();
         console.log('Producer connected');
 
-        const topic = 'faker-data';
+        const topics = ['faker-data-1', 'faker-data-2', 'faker-data-3'];
+        const messageHeaders = ['message-header-1', 'message-header-2',];
 
-        setInterval(async() => {
+        setInterval(async () => {
             const content = generateRandomContent();
             const message = JSON.stringify(content);
 
             const response = await producer.send({
-                topic,
+                topic: getRandomItem(topics),
                 messages: [
                     {
                         key: JSON.stringify({ message_id: faker.string.uuid() }),
                         value: message,
+                        headers: {
+                            source: Buffer.from(getRandomItem(messageHeaders)),
+                        },
                     },
                 ],
             });

@@ -91,7 +91,9 @@ services:
 
   # Kafka Connect
   k-connect-ingestion-poc:
-    image: confluentinc/cp-kafka-connect:7.6.1
+    build:
+      context: .
+      dockerfile: Dockerfile-kafka-connect
     container_name: k-connect-ingestion-poc
     ports:
       - "8083:8083"
@@ -112,7 +114,4 @@ services:
       CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
       CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
-      CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/jars"
       CONNECT_MONGO_URI: mongodb://root:example@mongodb-ingestion-poc:27017/?authSource=admin
-    volumes:
-      - ./connect-plugins:/etc/kafka-connect/jars

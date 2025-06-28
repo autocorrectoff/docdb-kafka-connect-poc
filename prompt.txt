@@ -1,0 +1,7 @@
+Can you create a Kafka Connect MongoDB Sink config that: handle 3 topics - 'faker-data-1', 'faker-data-2', 'faker-data-3' and having messages routed based on message header key 'source' and possible values 'message-header-1', 'message-header-2'. Rules as as follows:
+topic 'faker-data-1', message header 'message-header-1' should go to database testdb_1, collection_1
+topic 'faker-data-1', message header 'message-header-2' should go to database testdb_1, collection_2
+topic 'faker-data-2', message header 'message-header-1' should go to database testdb_2, collection_1
+topic 'faker-data-2', message header 'message-header-2' should go to database testdb_2, collection_2
+topic 'faker-data-3', message header 'message-header-1' should go to database testdb_3, collection_1
+topic 'faker-data-3', message header 'message-header-2' should go to database testdb_3, collection_2
