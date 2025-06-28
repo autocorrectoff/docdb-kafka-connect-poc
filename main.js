@@ -97,17 +97,21 @@ const main = async () => {
         console.log('Producer connected');
 
         const topics = ['faker-data-1', 'faker-data-2', 'faker-data-3'];
+        const dbs = ['faker-db-1', 'faker-db-2'];
         const messageHeaders = ['message-header-1', 'message-header-2',];
 
         setInterval(async () => {
+            const db = getRandomItem(dbs);
+            const topic = getRandomItem(topics);
+            const messageId = faker.string.uuid();
             const content = generateRandomContent();
-            const message = JSON.stringify(content);
+            const message = JSON.stringify({_id: messageId, target_db: db, target_collection: topic, ... content});
 
             const response = await producer.send({
-                topic: getRandomItem(topics),
+                topic,
                 messages: [
                     {
-                        key: JSON.stringify({ message_id: faker.string.uuid() }),
+                        key: messageId,
                         value: message,
                         headers: {
                             source: Buffer.from(getRandomItem(messageHeaders)),

@@ -3,17 +3,22 @@
   "config": {
     "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
     "tasks.max": "1",
-    "topics": "faker-data",
+    "write.concern.w": "1",
+    "max.batch.size": "10",
+    "max.poll.records": "10",
+    "topics": "faker-data-1,faker-data-2,faker-data-3",
     "connection.uri": "mongodb://root:example@mongodb-ingestion-poc:27017/?authSource=admin",
-    "database": "testdb",
-    "collection": "testcoll",
-    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "database": "defaultdb",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-    "key.converter.schemas.enable": "false",
     "value.converter.schemas.enable": "false",
     "writemodel.strategy": "com.mongodb.kafka.connect.sink.writemodel.strategy.ReplaceOneBusinessKeyStrategy",
-    "document.id.strategy": "com.mongodb.kafka.connect.sink.processor.id.strategy.PartialKeyStrategy",
-    "key.projection.type": "AllowList",
-    "key.projection.list": "message_id"
+    "document.id.strategy": "com.mongodb.kafka.connect.sink.processor.id.strategy.PartialValueStrategy",
+    "value.projection.type": "AllowList",
+    "value.projection.list": "_id",
+    "document.id.strategy.overwrite.existing": "true",
+    "namespace.mapper": "com.mongodb.kafka.connect.sink.namespace.mapping.FieldPathNamespaceMapper",
+    "namespace.mapper.value.database.field": "target_db",
+    "namespace.mapper.value.collection.field": "target_collection"
   }
 }
